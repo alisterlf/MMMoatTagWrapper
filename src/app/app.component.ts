@@ -30,24 +30,26 @@ export class AppComponent implements OnInit {
   getTag(value): void {
     this.encodedUrl = encodeURIComponent(value);
     this.getConfig(value).subscribe(data => {
-      console.log('data', data);
       this.processTag(data);
     });
   }
 
   processTag(xml) {
     const obj = this.parseXml(xml);
+    const mediaFile = obj.VAST.Ad.InLine.Creatives.Creative.Linear.MediaFiles.MediaFile;
+    let attributes = null;
     this.duration = obj.VAST.Ad.InLine.Creatives.Creative.Linear.Duration;
-    this.height =
-      obj.VAST.Ad.InLine.Creatives.Creative.Linear.MediaFiles.MediaFile[
-        '@attributes'
-      ].height;
-    this.width =
-      obj.VAST.Ad.InLine.Creatives.Creative.Linear.MediaFiles.MediaFile[
-        '@attributes'
-      ].width;
+    console.log(obj.VAST.Ad.InLine.Creatives.Creative.Linear.MediaFiles.MediaFile);
+
+    if (mediaFile.length !== undefined) {
+      attributes = mediaFile.find(x => x['@attributes'].type === 'application/javascript');
+    } else {
+      attributes = mediaFile;
+    }
+
+    this.height = attributes.height;
+    this.width = attributes.width;
     this.encodedDuration = encodeURIComponent(this.duration);
-    console.log('this.encodedDuration', this.encodedDuration);
   }
   getConfig(url) {
     const headers = new HttpHeaders({ 'Content-Type': 'text/xml' }).set(
@@ -69,7 +71,6 @@ export class AppComponent implements OnInit {
         '@attributes'
       ].width;
     this.encodedDuration = encodeURIComponent(this.duration);
-    console.log('this.encodedDuration', this.encodedDuration);
   }
 
   private parseXml(xml: string) {
