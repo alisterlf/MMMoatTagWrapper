@@ -42,9 +42,9 @@ export class AppComponent implements OnInit {
     console.log(obj.VAST.Ad.InLine.Creatives.Creative.Linear.MediaFiles.MediaFile);
 
     if (mediaFile.length !== undefined) {
-      attributes = mediaFile.find(x => x['@attributes'].type === 'application/javascript');
+      attributes = mediaFile.find(x => x['@attributes'].type === 'application/javascript')['@attributes'];
     } else {
-      attributes = mediaFile;
+      attributes = mediaFile['@attributes'];
     }
 
     this.height = attributes.height;
