@@ -1,11 +1,20 @@
 <mat-toolbar color="primary">MMMoatTagWrapper</mat-toolbar>
 <mat-card>
   <mat-form-field>
-    <input type="text" matInput placeholder="Tag" required #tag>
+    <textarea matInput placeholder="Tag" required #tag></textarea>
   </mat-form-field>
   <button mat-button (click)="getTag(tag.value)" mat-raised-button color="primary">Wrap Me!</button>
   <mat-divider></mat-divider>
-  <ul>
-    <li>https://svastx.moatads.com/mediamathvpaid176399725163/template.xml?level1=[AD_ATTR.advertiser]&level2=[AD_ATTR.campaign]&level3=[AD_ATTR.strategy]&level4=[AD_ATTR.creative]&slicer1=[BID_ATTR.site]&ad_width={{width}}&ad_height={{height}}&ad_title=MEDIAMATH_VPAID_Template_Title_Asset&ad_duration={{encodedDuration}}&zMoatBidId=[BID_ATTR.bid_id]&tmode=2&vast_url={{encodedUrl}}</li>
-  </ul>
+  <table *ngIf="newTags">
+    <tr>
+      <th>Old tag</th>
+      <th>New tag</th>
+    </tr>
+    <tr *ngFor="let newTag of newTags">
+      <td>
+        {{newTag.originalTag}}
+      </td>
+      <td>https://svastx.moatads.com/mediamathvpaid176399725163/template.xml?level1=[AD_ATTR.advertiser]&level2=[AD_ATTR.campaign]&level3=[AD_ATTR.strategy]&level4=[AD_ATTR.creative]&slicer1=[BID_ATTR.site]&ad_width={{newTag.width}}&ad_height={{newTag.height}}&ad_title=MEDIAMATH_VPAID_Template_Title_Asset&ad_duration={{newTag.duration}}&zMoatBidId=[BID_ATTR.bid_id]&zMoatOrgID=[AD_ATTR.organization]&tmode=2&vast_url={{newTag.url}}</td>
+    </tr>
+  </table>
 </mat-card>
