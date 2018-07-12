@@ -1,6 +1,9 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { NgxXml2jsonService } from 'ngx-xml2json';
+import { of } from 'rxjs';
+import { catchError } from 'rxjs/operators';
+import { FormBuilder, FormGroup, Validators } from '../../node_modules/@angular/forms';
 
 @Component({
   selector: 'app-root',
@@ -8,6 +11,7 @@ import { NgxXml2jsonService } from 'ngx-xml2json';
   styleUrls: ['./app.component.scss']
 })
 export class AppComponent implements OnInit {
+  public tagsForm: FormGroup;
   duration: string;
   encodedDuration: string;
   encodedUrl: string;
@@ -15,47 +19,76 @@ export class AppComponent implements OnInit {
   width: number;
   initTag: string;
   newTags: any[];
-  // tslint:disable-next-line:max-line-length
-  xml = `<VAST xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="vast_2.0.1-creativeView.xsd" version="2.0"><Ad id="moat_ad"><InLine><AdSystem>2.0</AdSystem><AdTitle>Vick_-_PG1_Vick_Winter_Janeiro_2018_Brazil-23562901</AdTitle><Impression/><Creatives><Creative><Linear><Duration>00:00:15</Duration><MediaFiles><MediaFile type="application/javascript" apiFramework="VPAID" height="360" width="640" delivery="progressive"><![CDATA[https://svastx.moatads.com/iprospectpgbrazilsizmekvideo327190469710/moatwrapper.js#vast=https%3a%2f%2fbs.serving-sys.com%2fServing%3fcn%3ddisplay%26c%3d23%26pl%3dVAST%26pli%3d23562901%26PluID%3d0%26pos%3d5815%26ord%3d88178920%26cim%3d1&level1=851181&level2=MediaMath%20BR%20-%20ROS-Video&level3=23562901&level4=vpaid&slicer1=undefined&slicer2=undefined&pcode=iprospectpgbrazilsizmekvideo327190469710&spvb=1]]></MediaFile></MediaFiles></Linear></Creative></Creatives></InLine></Ad></VAST>`;
   constructor(
     private ngxXml2jsonService: NgxXml2jsonService,
-    private http: HttpClient
-  ) { }
+    private http: HttpClient,
+    private fb: FormBuilder
+  ) {}
 
   ngOnInit(): void {
-    // this.init();
-    // tslint:disable-next-line:max-line-length
-    this.initTag = 'https://svastx.moatads.com/iprospectpgbrazilsizmekvideo327190469710/Vick_-_PG1_Vick_Winter_Janeiro_2018_Brazil-23562901_js.xml';
+    this.createForm();
+  }
+
+  createForm(): void {
+    this.tagsForm = this.fb.group({
+      moatTags: ['', Validators.required]
+    });
+  }
+  onSubmit(): void {
+    console.log('this.tagsForm.valid', this.tagsForm.valid);
+    if (this.tagsForm.valid) {
+      this.getTag(this.tagsForm.get('moatTags').value);
+    }
+  }
+  reset(): void {
+    this.newTags = null;
   }
 
   getTag(value): void {
     if (value === '') {
       return;
     }
-    const baseTags = value.split('\n');
+    const baseTags: string[] = value.split('\n');
     this.newTags = [];
     baseTags.forEach(tag => {
-      this.getConfig(tag).subscribe(data => {
-        const precessedTag = this.processTag(data);
-        this.newTags.push({
-          originalTag: tag,
-          url: encodeURIComponent(tag),
-          height: precessedTag.height,
-          width: precessedTag.width,
-          duration: precessedTag.duration
+      this.getConfig(tag)
+        .pipe(
+          catchError(() => {
+            return of(null);
+          })
+        )
+        .subscribe(data => {
+          const precessedTag = this.processTag(data);
+          const index = baseTags.indexOf(tag);
+          this.newTags[index] = {
+            originalTag: tag,
+            url: encodeURIComponent(tag),
+            height: precessedTag.height,
+            width: precessedTag.width,
+            duration: precessedTag.duration
+          };
         });
-      });
     });
   }
 
   processTag(xml) {
+    console.log('processTag', xml);
+    if (!xml) {
+      return {
+        height: null,
+        width: null,
+        duration: null
+      };
+    }
     const obj = this.parseXml(xml);
     const mediaFile = obj.VAST.Ad.InLine.Creatives.Creative.Linear.MediaFiles.MediaFile;
     let attributes = null;
     this.duration = obj.VAST.Ad.InLine.Creatives.Creative.Linear.Duration;
 
     if (mediaFile.length !== undefined) {
-      attributes = mediaFile.find(x => x['@attributes'].type === 'application/javascript')['@attributes'];
+      attributes = mediaFile.find(x => x['@attributes'].type === 'application/javascript')[
+        '@attributes'
+      ];
     } else {
       attributes = mediaFile['@attributes'];
     }
@@ -70,25 +103,7 @@ export class AppComponent implements OnInit {
     };
   }
   getConfig(url) {
-    const headers = new HttpHeaders({ 'Content-Type': 'text/xml' }).set(
-      'Accept',
-      'text/xml'
-    );
     return this.http.get(url, { responseType: 'text' });
-  }
-
-  private init() {
-    const obj = this.parseXml(this.xml);
-    this.duration = obj.VAST.Ad.InLine.Creatives.Creative.Linear.Duration;
-    this.height =
-      obj.VAST.Ad.InLine.Creatives.Creative.Linear.MediaFiles.MediaFile[
-        '@attributes'
-      ].height;
-    this.width =
-      obj.VAST.Ad.InLine.Creatives.Creative.Linear.MediaFiles.MediaFile[
-        '@attributes'
-      ].width;
-    this.encodedDuration = encodeURIComponent(this.duration);
   }
 
   private parseXml(xml: string) {

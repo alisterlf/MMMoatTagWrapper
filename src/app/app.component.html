@@ -1,20 +1,41 @@
 <mat-toolbar color="primary">MMMoatTagWrapper</mat-toolbar>
-<mat-card>
-  <mat-form-field>
-    <textarea matInput placeholder="Tag" required #tag></textarea>
-  </mat-form-field>
-  <button mat-button (click)="getTag(tag.value)" mat-raised-button color="primary">Wrap Me!</button>
-  <mat-divider></mat-divider>
-  <table *ngIf="newTags">
+<form [formGroup]="tagsForm" (ngSubmit)="onSubmit()">
+  <mat-card>
+    <mat-card-content>
+      <mat-form-field>
+        <textarea matInput placeholder="Moat tags" formControlName="moatTags" cdkTextareaAutosize cdkAutosizeMinRows="1" cdkAutosizeMaxRows="20"></textarea>
+        <mat-error *ngIf="tagsForm.get('moatTags').hasError('required')">
+          Moat tags is required.
+        </mat-error>
+      </mat-form-field>
+    </mat-card-content>
+    <mat-card-actions>
+      <button type="reset" (click)="reset()" mat-raised-button>
+        Reset
+      </button>
+      <button type="submit" mat-raised-button color="primary">
+        Wrap Me!
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</form>
+<mat-divider></mat-divider>
+<mat-card *ngIf="newTags">
+  <table>
     <tr>
+      <th>#</th>
       <th>Old tag</th>
       <th>New tag</th>
     </tr>
-    <tr *ngFor="let newTag of newTags">
+    <tr *ngFor="let newTag of newTags; let i = index">
+      <td>
+        {{i}}
+      </td>
       <td>
         {{newTag.originalTag}}
       </td>
-      <td>https://svastx.moatads.com/mediamathvpaid176399725163/template.xml?level1=[AD_ATTR.advertiser]&level2=[AD_ATTR.campaign]&level3=[AD_ATTR.strategy]&level4=[AD_ATTR.creative]&slicer1=[BID_ATTR.site]&ad_width={{newTag.width}}&ad_height={{newTag.height}}&ad_title=MEDIAMATH_VPAID_Template_Title_Asset&ad_duration={{newTag.duration}}&zMoatBidId=[BID_ATTR.bid_id]&zMoatOrgID=[AD_ATTR.organization]&tmode=2&vast_url={{newTag.url}}</td>
+      <td *ngIf="newTag.height">https://svastx.moatads.com/mediamathvpaid176399725163/template.xml?level1=[AD_ATTR.advertiser]&level2=[AD_ATTR.campaign]&level3=[AD_ATTR.strategy]&level4=[AD_ATTR.creative]&slicer1=[BID_ATTR.site]&ad_width={{newTag.width}}&ad_height={{newTag.height}}&ad_title=MEDIAMATH_VPAID_Template_Title_Asset&ad_duration={{newTag.duration}}&zMoatBidId=[BID_ATTR.bid_id]&zMoatOrgID=[AD_ATTR.organization]&tmode=2&vast_url={{newTag.url}}</td>
+      <td *ngIf="!newTag.height">ERROR!</td>
     </tr>
   </table>
 </mat-card>
