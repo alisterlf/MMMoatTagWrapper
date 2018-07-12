@@ -13,6 +13,9 @@
       <button type="reset" (click)="reset()" mat-raised-button>
         Reset
       </button>
+      <button type="button" mat-raised-button ngxClipboard [cbContent]="clipboard" *ngIf="newTags">
+        Copy new tags to clipboard
+      </button>
       <button type="submit" mat-raised-button color="primary">
         Wrap Me!
       </button>
@@ -32,10 +35,11 @@
         {{i+1}}
       </td>
       <td>
-        {{newTag.originalTag}}
+        {{oldTags[i]}}
       </td>
-      <td *ngIf="newTag.height">https://svastx.moatads.com/mediamathvpaid176399725163/template.xml?level1=[AD_ATTR.advertiser]&level2=[AD_ATTR.campaign]&level3=[AD_ATTR.strategy]&level4=[AD_ATTR.creative]&slicer1=[BID_ATTR.site]&ad_width={{newTag.width}}&ad_height={{newTag.height}}&ad_title=MEDIAMATH_VPAID_Template_Title_Asset&ad_duration={{newTag.duration}}&zMoatBidId=[BID_ATTR.bid_id]&zMoatOrgID=[AD_ATTR.organization]&tmode=2&vast_url={{newTag.url}}</td>
-      <td *ngIf="!newTag.height">ERROR!</td>
+      <td>
+        {{newTag?newTag.newTag:'loading'}}
+      </td>
     </tr>
   </table>
 </mat-card>

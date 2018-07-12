@@ -23,6 +23,7 @@
     "@angular/platform-browser-dynamic": "^6.0.7",
     "@angular/router": "^6.0.7",
     "core-js": "^2.5.7",
+    "ngx-clipboard": "^11.1.1",
     "ngx-xml2json": "^1.0.2",
     "rxjs": "^6.2.1",
     "zone.js": "^0.8.26"

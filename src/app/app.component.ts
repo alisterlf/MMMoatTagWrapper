@@ -19,6 +19,8 @@ export class AppComponent implements OnInit {
   width: number;
   initTag: string;
   newTags: any[];
+  clipboard: string;
+  oldTags: string[];
   constructor(
     private ngxXml2jsonService: NgxXml2jsonService,
     private http: HttpClient,
@@ -48,9 +50,9 @@ export class AppComponent implements OnInit {
     if (value === '') {
       return;
     }
-    const baseTags: string[] = value.split('\n');
+    this.oldTags = value.split('\n');
     this.newTags = [];
-    baseTags.forEach(tag => {
+    this.oldTags.forEach(tag => {
       this.getConfig(tag)
         .pipe(
           catchError(() => {
@@ -58,15 +60,28 @@ export class AppComponent implements OnInit {
           })
         )
         .subscribe(data => {
-          const precessedTag = this.processTag(data);
-          const index = baseTags.indexOf(tag);
+          const precessedTag = data ? this.processTag(data) : null;
+          const index = this.oldTags.indexOf(tag);
+          const newTag = precessedTag
+            ? 'https://svastx.moatads.com/mediamathvpaid176399725163/template.xml?' +
+              'level1=[AD_ATTR.advertiser]&level2=[AD_ATTR.campaign]&level3=[AD_ATTR.strategy]&level4=[AD_ATTR.creative]&' +
+              'slicer1=[BID_ATTR.site]&ad_width=' +
+              precessedTag.width +
+              '&ad_height=' +
+              precessedTag.height +
+              '&ad_title=MEDIAMATH_VPAID_Template_Title_Asset&ad_duration=' +
+              precessedTag.duration +
+              '&zMoatBidId=[BID_ATTR.bid_id]&zMoatOrgID=[AD_ATTR.organization]&tmode=2&vast_url=' +
+              encodeURIComponent(tag)
+            : 'ERROR!';
           this.newTags[index] = {
             originalTag: tag,
-            url: encodeURIComponent(tag),
-            height: precessedTag.height,
-            width: precessedTag.width,
-            duration: precessedTag.duration
+            newTag: newTag
           };
+          this.clipboard = '';
+          this.newTags.forEach(curTag => {
+            this.clipboard += curTag && curTag.newTag ? curTag.newTag + '\n' : 'ERROR! \n';
+          });
         });
     });
   }
