@@ -37,7 +37,6 @@ export class AppComponent implements OnInit {
     });
   }
   onSubmit(): void {
-    console.log('this.tagsForm.valid', this.tagsForm.valid);
     if (this.tagsForm.valid) {
       this.getTag(this.tagsForm.get('moatTags').value);
     }
@@ -87,7 +86,6 @@ export class AppComponent implements OnInit {
   }
 
   processTag(xml) {
-    console.log('processTag', xml);
     if (!xml) {
       return {
         height: null,
