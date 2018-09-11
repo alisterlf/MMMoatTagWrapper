@@ -54,7 +54,8 @@ export class AppComponent implements OnInit {
     this.oldTags.forEach(tag => {
       this.getConfig(tag)
         .pipe(
-          catchError(() => {
+          catchError((err, caught) => {
+            console.error('Could not fetch data!:', err, caught);
             return of(null);
           })
         )
@@ -94,9 +95,12 @@ export class AppComponent implements OnInit {
       };
     }
     const obj = this.parseXml(xml);
-    const mediaFile = obj.VAST.Ad.InLine.Creatives.Creative.Linear.MediaFiles.MediaFile;
+    const creative = obj.VAST.Ad.InLine.Creatives.Creative.Linear
+      ? obj.VAST.Ad.InLine.Creatives.Creative
+      : obj.VAST.Ad.InLine.Creatives.Creative[0];
+    const mediaFile = creative.Linear.MediaFiles.MediaFile;
     let attributes = null;
-    this.duration = obj.VAST.Ad.InLine.Creatives.Creative.Linear.Duration;
+    this.duration = creative.Linear.Duration;
 
     if (mediaFile.length !== undefined) {
       attributes = mediaFile.find(x => x['@attributes'].type === 'application/javascript')[
